@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Search</title>
+  <link rel="stylesheet" href="./static/css/main.css" />
+  <script defer src="./static/js/main.js"></script>
+</head>
+<body>
+<h1>Image Search</h1>
+
+<h2>Distance Methods</h2>
+  <button id="intersect-btn">Intersection</button>
+  <button id="euclid-btn">Euclid</button>
+<br>
+<br>
+
+<h2>Encode Methods</h2>
+<div class="section" id="encode-section">
+  <!-- メソッド切り替えのリンク -->
+  <nav id="method-selection">
+    <a href="#" class="method-link" data-method="hist_rgb_256">RGB(256bin)</a>
+    <br>
+    <a href="#" class="method-link" data-method="hist_rgb_64">RGB(64bin)</a>
+    <a href="#" class="method-link" data-method="hist_rgb_64_2x2">RGB(64bin_2x2)</a>
+    <a href="#" class="method-link" data-method="hist_rgb_64_3x3">RGB(64bin_3x3)</a>
+    <br>
+    <a href="#" class="method-link" data-method="hist_hsv_256">HSV(256bin)</a>
+    <br>
+    <a href="#" class="method-link" data-method="hist_hsv_64">HSV(64bin)</a>
+    <a href="#" class="method-link" data-method="hist_hsv_64_2x2">HSV(64bin_2x2)</a>
+    <a href="#" class="method-link" data-method="hist_hsv_64_3x3">HSV(64bin_3x3)</a>
+    <br>
+    <a href="#" class="method-link" data-method="hist_luv_256">LUV(256bin)</a>
+    <br>
+    <a href="#" class="method-link" data-method="hist_luv_64">LUV(64bin)</a>
+    <a href="#" class="method-link" data-method="hist_luv_64_2x2">LUV(64bin_2x2)</a>
+    <a href="#" class="method-link" data-method="hist_luv_64_3x3">LUV(64bin_3x3)</a>
+    <br>
+    <a href="#" class="method-link" data-method="vgg16_fc7">VGG16_fc7</a>
+  </nav>
+</div>
+
+<br>
+<br>
+
+<!-- 結果の表 -->
+<table id="results"></table>
+</body>
+</html>

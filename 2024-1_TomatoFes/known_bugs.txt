@@ -1,0 +1,7 @@
+Known Bugs
+
+１．Window Scaling Issue on Windows: 
+When the display scaling is set to anything other than 100%, the window size may exceed the standard dimensions of 1920x1080.
+
+２．Mouse Click Delay on Title Screen: 
+There is a slight delay when clicking with the mouse on the title screen.

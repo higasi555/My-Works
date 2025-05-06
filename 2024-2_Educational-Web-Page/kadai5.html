@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>課題5</title>
+    <!--以下js-->
+    <script>
+        // 入力文字を格納する変数
+        let sentence = "";
+        // 入力sentenceを、単語ごとに分離して格納するための線形リスト
+        let words = Array();
+
+        function init(){
+            sentence = "";
+            words = [];
+        }
+
+        // set関数
+        function setSentence(input) {
+            // inputをsentenceに格納
+            sentence = input.value;
+        }
+
+        // 入力単語を、半角スペースで分離し、線形リストに格納する関数
+        function setWords(str){
+            // 半角スペースと改行で、入力文を分割する
+            // words = str.split(/[\s\n]+/);
+            words = [];
+            let segments = str.split(/\n/); // まず改行で分割
+
+            segments.forEach(function(segment) {
+                let spaceSplit = segment.split(' '); // 各セグメントを半角スペースで分割
+                spaceSplit.forEach(function(word) {
+                    words.push(word); // 単語を配列にpush
+                });
+                words.push("\n"); // 各セグメントの後に改行を追加（表示したときに、元の改行を維持するため）
+            });
+
+            // 最後の改行を削除
+            if (words[words.length - 1] === "\n") {
+                words.pop();
+            }
+        }
+
+
+        // 結果のset関数
+        function setResult(resultText) {
+            document.getElementById("result").innerHTML = resultText;
+        }
+
+
+        // 入力した文字列を線形リスト経由で出力する関数
+        function addlink(){
+            let resultText = ``;
+            setWords(sentence);
+
+            for (let i = 0; i < words.length; i++) {
+                if(words[i] === "\n"){  // 改行はそのまま維持して表示
+                    resultText += `<br>`;
+                }else{
+                    // resultText += `<a href="https://dictionary.cambridge.org/ja/dictionary/english/`+`${words[i]}"`+` target="_blank">`
+                    // resultText += `<span onclick="openURL("${encodeURIComponent(words[i])}")">`
+                    // resultText += `${words[i]}</span></a> `;
+                    resultText += `<span onclick="openURL('${encodeURIComponent(words[i])}')">${words[i]}</span> `;
+                }
+            }
+
+
+            setResult(resultText);
+        }
+
+        // 指定単語のURLを開く関数（wordはエンコードされたURL）
+        function openURL(word) {
+            // 以下cambridge dictionaryのオープン
+            const url = `https://dictionary.cambridge.org/ja/dictionary/english/${word}`;
+            window.open(url, '_blank'); // 新しいタブでURLを開く
+
+            // 以下cookieへ開いた単語を登録、既にcookieへ登録されていれば、元々のvalue+1を改めてset
+            const word_decoded = decodeURIComponent(word);
+            let count = parseInt(getCookie(word_decoded) || 0); //count(string)をintに変換
+            setCookie(word_decoded, count + 1);
+        }
+
+
+        //以下cookie関連（kadai2-6より）
+        // cookieのset関数（setしたいcookieの名前,その値）
+        function setCookie(c_name, value) {
+            // 有効期限を格納する変数（ミリ秒）
+            let expdate = new Date();
+            expdate.setTime(expdate.getTime() + (7*24*60*60*1000)); // 期限はとりあえず１週間
+
+            // 有効期限をUTCのstringとして格納する変数
+            let expstr = "expires=" + expdate.toUTCString();
+
+            // cookieの設定
+            document.cookie = c_name + "=" + value + ";" + expstr;
+
+            // デバッグ用
+            // console.log(document.cookie);
+        }
+
+        // cookieのget関数（getしたいcookieの名前）
+        function getCookie(name) {
+            let cookieArray = document.cookie.split('; ');
+            for (let cookie of cookieArray) {
+                let [key, value] = cookie.split('=');
+                if (key === name) return value;
+            }
+            return null;
+        }
+
+        function displayCookies() {
+            // cookieを一時的に格納する配列
+            let cookieArray = document.cookie.split('; ');
+            // 結果の表
+            let result = '<table><tr><th>単語</th><th>検索回数(以前確認テストで正解したものは0)</th></tr>';
+
+            cookieArray.forEach(function(cookie) {
+                let [key, value] = cookie.split('=');
+                result += `<tr><td>${decodeURIComponent(key.trim())}</td><td>${value}</td></tr>`;
+            });
+
+            result += '</table>';
+            document.getElementById("cookieList").innerHTML = result;
+        }
+
+        // 以下単語テストに関する関数
+        // グローバル変数
+        let currentIndex = 0;   // テストを行うときに表示する単語のindex
+        let ary_cookie = [];    //cookieを一旦arrayに移したもの、回数が0のものは入っていない
+
+        // テストを開始する関数
+        function startTest() {
+            currentIndex = 0;   //indexの初期化
+            ary_cookie = getCookiesAsArray();  // 全cookieの取得
+            displayNextWord();  // 最初の単語を表示
+        }
+
+        // 元々表示している単語から次の単語を表示し、単語を覚えていればcoookieのvalueを0に、覚えていなければ変更を加えない関数
+        function displayNextWord() {
+            // 前の単語がcookie配列の最後尾であった場合、テストを終了し結果を表示する
+            if (currentIndex >= ary_cookie.length) {
+                document.getElementById('testContent').innerHTML ='You finished!'
+                displayResults();  // テスト結果を表示
+                return;
+            }
+            // 単語を表示し、覚えているか覚えていないかの選択肢によってcookieのvalueを0にするかしないか変化させる
+            let word = ary_cookie[currentIndex].key;
+            document.getElementById('testContent').innerHTML = `
+        <p>この単語を覚えていますか？ ${decodeURIComponent(word)}</p>
+        <button onclick="recordAnswer('${word}', true)">覚えている</button>
+        <button onclick="recordAnswer('${word}', false)">覚えていない</button>
+    `;
+        }
+
+
+        // rememberdがtrueならcookieのvalueを0に、そうでないならそのまま変化せず、次の単語を表示する関数
+        function recordAnswer(word, remembered) {
+            if (remembered) {
+                setCookie(word, 0);  // 覚えている単語はCookieのvalueを0にする
+            }
+            currentIndex++;  // 次の単語へ
+            displayNextWord();
+        }
+
+        // 単語ごとに覚えているか覚えていないかの結果を表として出力する関数
+        function displayResults() {
+            let resultHTML = '<h3>テスト結果</h3><table><tr><th>単語</th><th>覚えているかどうか</th></tr>';
+            // 結果の表を、cookie出力と同様に行う
+            ary_cookie.forEach(function(cookie) {
+                let answer; //answar,はいかいいえが格納される
+                if (getCookie(cookie.key) === '0') { //覚えていればvalueは0なので、覚えているかどうかは「はい」
+                    answer = 'はい';
+                } else {
+                    answer = 'いいえ';
+                }
+                resultHTML += `<tr><td>${decodeURIComponent(cookie.key)}</td><td>${answer}</td></tr>`;
+            });
+            resultHTML += '</table>';
+            document.getElementById('testResult').innerHTML = resultHTML;
+        }
+
+        // cookieを配列として取得する関数
+        function getCookiesAsArray() {
+            let cookiesArray = [];
+            let cookieStringArray = document.cookie.split('; ');
+
+            // 各cookieに対してループを実行
+            for (let cookie of cookieStringArray) {
+                // =でsplitして、keyとvalueの組み合わせを得る
+                let [key, value] = cookie.split('=');
+                key = key.trim();
+                value = getCookie(key);  // getCookie関数を使って値を再取得
+                if (value !== null && value !== '0') {
+                    cookiesArray.push({ key, value });  // キーと値のペアをcookieの配列に追加
+                }
+            }
+
+            return cookiesArray;
+        }
+    </script>
+    <!--以下css-->
+    <style>
+        h1 {
+            padding: 0.1em;
+            background: darkblue;
+            color: #ffffff;
+        }
+        details > summary {
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        details[open] > summary {
+            color: #0056b3;
+        }
+        #result {
+            font-size: 1.2em;
+            /*font-family: 'Hiragino Kaku Gothic Pro W3',sans-serif;*/
+            line-height: 1.5;
+        }
+        /*リンク*/
+        a {
+            background-color: transparent;
+            color: inherit;
+            text-decoration: none;
+        }
+        /*入力欄*/
+        textarea#sentence {
+            width: 100%;
+            height: 10em;
+        }
+        /*ボタン*/
+        button {
+            /*width: 1.5em;*/
+            /*height:1.5em;*/
+            font-size: 100%;
+        }
+        table {
+            border-collapse: collapse;
+            width: 40%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th{
+            text-align: center;
+            padding: 5px;
+            background-color: #505050;  /*ヘッダーの色を灰色に*/
+            color: #fff;
+        }
+        td{
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Bridge</h1>
+    <h4>Welcome to "Word Bridge" Page!!<br></h4>
+    <p>
+        This page aim to assist your English studies by providing direct word search functionality from reading materials and a testing function to review words you've learned.<br>
+        <br>
+        You can follow these steps to use our service!<br>
+        1,2. Enter the text you want to read!<br>
+        3. Click on any word to search its meaning directly in the Cambridge Dictionary!<br>
+        4-1. Review words you've learned<br>
+        4-2. Testing words you've learned<br>
+        5. Repeat steps 4-1 and 4-2 as many times as you like to continue learning and testing new words!!<br>
+    </p>
+    <!--本文入力部分-->
+    <form id="keywordForm">
+        <fieldset>
+            <!--以下入力フォーム-->
+            <!--ここでtypeをtextに指定-->
+            <!--変更があったら、set関数を呼び出し-->
+            <legend>入力</legend>
+            <label for="sentence">1.今から読む文章を入力:</label>
+            <br>
+            <textarea id="sentence" name="sentence" onchange="setSentence(this)" rows="4" cols="50"></textarea>
+            <br>
+        </fieldset>
+
+        <button type="button" onclick="addlink()">2.文章を決定</button>
+    </form>
+
+    <!--検索機能付き本文表示部分-->
+    <details id="resultContainer">
+        <summary>3.検索機能付き本文を表示</summary>
+        <div id="result"></div>
+    </details>
+
+    <!--検索履歴表示部分-->
+    <button type="button" onclick="displayCookies()">4-1.今までの検索履歴を表示/更新</button>
+    <div id="cookieList"></div>
+
+    <!--WordTest部分-->
+    <div id="wordTest">
+        <button type="button" onclick="startTest()">4-2.単語テストを実施/再実施</button>
+        <div id="testContent"></div>
+        <div id="testResult"></div>
+    </div>
+    <p style="text-align: right">2210593 Fumiaki Matsuura</p>
+</body>
+</html>

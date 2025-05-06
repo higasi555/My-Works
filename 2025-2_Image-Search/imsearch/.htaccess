@@ -1,0 +1,11 @@
+Options +ExecCGI +FollowSymLinks
+AddHandler cgi-script .cgi
+order deny,allow
+deny from all
+allow from 130.153.192.
+satisfy any
+
+AuthUserFile "/home/yanai-lab/matsuura-f/.htpw"
+AuthName "Enter password"
+AuthType basic
+require valid-user
